@@ -59,13 +59,13 @@ class SenderBot:
             if event['etag'][1:-1] not in self.past_birthdays and event['etag'][1:-1] not in self.past_weekly:
                 self.comparison(event)
 
+
+
     def comparison(self, event):
         date2 = (
             datetime.now().year, datetime.now().month, datetime.now().day, datetime.now().hour, datetime.now().minute,
             datetime.now().second)
-        text = f"{event['summary']} / date: {event['start']}"
-        meessage = print('test')
-        # meessage = self.out_bot.send_message(self.myid, text)
+        text = f"{event['summary']} / date: {event['start']} / {event['etag']}"
         if 'recurrence' in event:  # Дни рождения
             if event['recurrence'] == ['RRULE:FREQ=YEARLY']:
                 if 'dateTime' in event['start']:
@@ -73,27 +73,26 @@ class SenderBot:
                     if (date1.month, date1.day, date1.hour, date1.minute, date1.second) < date2[1:] and event[
                         'etag'] not in self.past_birthdays:
                         self.past_birthdays.append(event['etag'].replace('"', ''))
-                        meessage
+                        print(text)
                 else:
                     date1 = self.changing_datetime_format(event['start']['date'])
                     if (date1.month, date1.day, date1.hour, date1.minute, date1.second) < date2[1:] and event[
                         'etag'] not in self.past_birthdays:
                         self.past_birthdays.append(event['etag'].replace('"', ''))
-                        meessage
-
+                        print(text)
             if 'RRULE:FREQ=MONTHLY' in event['recurrence'][0]:
                 if 'dateTime' in event['start']:
                     date1 = self.changing_datetime_format(event['start']['dateTime'])
                     if (date1.day, date1.hour, date1.minute, date1.second) < date2[2:] and event[
                         'etag'] not in self.past_birthdays:
                         self.past_birthdays.append(event['etag'].replace('"', ''))
-                        meessage
+                        print(text)
                 else:
                     date1 = self.changing_datetime_format(event['start']['date'])
                     if (date1.day, date1.hour, date1.minute, date1.second) < date2[2:] and event[
                         'etag'] not in self.past_birthdays:
                         self.past_birthdays.append(event['etag'].replace('"', ''))
-                        meessage
+                        print(text)
             if 'RRULE:FREQ=WEEKLY' in event['recurrence'][0]:
                 # BYDAY = MO, WE, FR, TU, TH, SA, SU   Monday Tuesday Wednesday Thursday Friday Saturday Sunday
                 days_event = event['recurrence'][0].split('BYDAY=')[-1]
@@ -103,28 +102,26 @@ class SenderBot:
                         if (date1.hour, date1.minute, date1.second) < date2[3:] and event[
                             'etag'] not in self.past_birthdays:
                             self.past_weekly.append(event['etag'].replace('"', ''))
-                            meessage
+                            print(text)
                     else:
                         date1 = self.changing_datetime_format(event['start']['date'])
                         if (date1.hour, date1.minute, date1.second) < date2[3:] and event[
                             'etag'] not in self.past_birthdays:
                             self.past_weekly.append(event['etag'].replace('"', ''))
-                            meessage
+                            print(text)
         else:
             if 'dateTime' in event['start']:
                 date1 = self.changing_datetime_format(event['start']['dateTime'])
                 if (date1.year, date1.month, date1.day, date1.hour, date1.minute, date1.second) < date2 and event[
                     'etag'] not in self.past_birthdays:
                     self.past_birthdays.append(event['etag'].replace('"', ''))
-                    meessage
-
+                    print(text)
             else:
                 date1 = self.changing_datetime_format(event['start']['date'])
                 if (date1.year, date1.month, date1.day, date1.hour, date1.minute, date1.second) < date2 and event[
                     'etag'] not in self.past_birthdays:
                     self.past_birthdays.append(event['etag'].replace('"', ''))
-                    meessage
-
+                    print(text)
     def changing_datetime_format(self, event_datetime):
         if 'T' not in event_datetime:
             event_datetime += 'T00:00:00+00:00'
@@ -146,18 +143,15 @@ class SenderBot:
                 datetime.now().minute) <= 5:
             self.past_weekly = []
 
-    def start_bot(self, n, loaded_dict):
+    def start_bot(self, loaded_dict):
         i = 0
-        while True:
-            if n.value == 1.1:
-                i += 1
-                time.sleep(2)  # 240 секунд в релизной версии
-                print(i)
-                self.send_event_info(loaded_dict)
-                self.zeroing_past_birthdays()
-                self.zeroing_past_weekly()
-
-                print(n.value)
+        for i in range(2):
+            i += 1
+            time.sleep(1)  # 240 секунд в релизной версии
+            print(i)
+            self.send_event_info(loaded_dict)
+            self.zeroing_past_birthdays()
+            self.zeroing_past_weekly()
 
 
 # class TelegramBot:
@@ -169,30 +163,29 @@ class SenderBot:
 #
 #         @bot.message_handler(commands=['stop'])
 #         def stop_bot(message):
-#             n.value = 0.0
+
 #             bot.send_message(message.chat.id, 'Bot stopped')
 #
 #         @bot.message_handler(commands=['start'])
 #         def start_bot(message):
-#             n.value = 1.1
+#
 #             bot.send_message(message.chat.id, 'Bot started')
 #
 #         bot.polling(none_stop=True)
 
 
 if __name__ == '__main__':
-    # loaded_dict = calendar.get_events()
     # with open('dict.txt', 'wb') as f:
     #     pickle.dump(loaded_dict, f)
     with open('dict.txt', 'rb') as f:
         loaded_dict = pickle.load(f)
-    num = Value('d', 1.1)
     notification_message = Queue()
-    calendar = GoogleCalendar('denis.elers23@gmail.com')
+    # calendar = GoogleCalendar('denis.elers23@gmail.com')
+    # loaded_dict = calendar.get_events()
     # stgbot = TelegramBot()
     # p1 = Process(target=stgbot.start, args=(num,))
     sbot = SenderBot(myid=myid)
-    sbot.start_bot(num, loaded_dict)
+    sbot.start_bot(loaded_dict)
     # p2 = Process(target=sbot.start_bot, args=(num, loaded_dict, notification_message))
     # p1.start()
     # p2.start()
