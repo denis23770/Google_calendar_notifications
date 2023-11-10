@@ -15,6 +15,8 @@ if os.path.exists(dotenv_path):
 
 token = os.getenv('token')
 myid = os.getenv('myid')
+bot = telebot.TeleBot(token)
+
 
 
 class GoogleCalendar:
@@ -49,6 +51,7 @@ class SenderBot:
 
     def __init__(self, myid):
         self.myid = myid
+        self.n = 'n'
         self.out_bot = telebot.TeleBot(token)
         self.past_birthdays = []  # список с исключениями событьи др, должен обновляться каждый год первого января.
         self.past_weekly = []  # список с исключениями событьи недели, должен обновляться каждый понедельник.
@@ -146,7 +149,7 @@ class SenderBot:
                 datetime.now().minute) <= 5:
             self.past_weekly = []
 
-    def start_bot(self, n, loaded_dict, n_message):
+    def start_local_bot(self, n, loaded_dict):
         i = 0
         while True:
             if n.value == 1.1:
@@ -160,24 +163,39 @@ class SenderBot:
                 print(n.value)
 
 
-class TelegramBot:
-    def __init__(self):
-        self.stop = 0.0
 
-    def start(self, n):
-        bot = telebot.TeleBot(token)
 
         @bot.message_handler(commands=['stop'])
         def stop_bot(message):
-            n.value = 0.0
+            self.n.value = 0.0
             bot.send_message(message.chat.id, 'Bot stopped')
 
         @bot.message_handler(commands=['start'])
         def start_bot(message):
-            n.value = 1.1
+            self.n.value = 1.1
             bot.send_message(message.chat.id, 'Bot started')
 
         bot.polling(none_stop=True)
+
+
+# class TelegramBot:
+#     def __init__(self):
+#         self.stop = 0.0
+#
+#     def start(self, n):
+#         bot = telebot.TeleBot(token)
+#
+#         @bot.message_handler(commands=['stop'])
+#         def stop_bot(message):
+#             n.value = 0.0
+#             bot.send_message(message.chat.id, 'Bot stopped')
+#
+#         @bot.message_handler(commands=['start'])
+#         def start_bot(message):
+#             n.value = 1.1
+#             bot.send_message(message.chat.id, 'Bot started')
+#
+#         bot.polling(none_stop=True)
 
 
 if __name__ == '__main__':
@@ -187,14 +205,12 @@ if __name__ == '__main__':
     with open('dict.txt', 'rb') as f:
         loaded_dict = pickle.load(f)
     num = Value('d', 0.0)
+    sbot = SenderBot(myid=myid)
     notification_message = Queue()
     calendar = GoogleCalendar('denis.elers23@gmail.com')
-    stgbot = TelegramBot()
-    p1 = Process(target=stgbot.start, args=(num,))
-    sbot = SenderBot(myid=myid)
-
-    p2 = Process(target=sbot.start_bot, args=(num, loaded_dict, notification_message))
-    p1.start()
+    # p1 = Process(target=sbot.start_tgbot, args=(num,))
+    p2 = Process(target=sbot.start_local_bot, args=(num, loaded_dict, ))
+    # p1.start()
     p2.start()
-    p1.join()
+    # p1.join()
     p2.join()
