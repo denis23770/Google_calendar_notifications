@@ -53,6 +53,7 @@ class SenderBot:
         self.past_birthdays = []  # список с исключениями событьи др, должен обновляться каждый год первого января.
         self.past_weekly = []  # список с исключениями событьи недели, должен обновляться каждый понедельник.
 
+
     def send_event_info(self, events_d):
         events = events_d['items']
         for event in events:
