@@ -14,6 +14,7 @@ if os.path.exists(dotenv_path):
 
 token = os.getenv('token')  # токен телеграм-бота
 my_id = os.getenv('my_id')  # айди пользователя телеграмма
+calendar_id = os.getenv('calendar_id')  # айди календаря
 
 
 class SenderBot:
@@ -21,7 +22,7 @@ class SenderBot:
     Получает словарь с событиями, ищет в них события дата которых наступила, отправляет название события в ТГ
     """
     SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-    FILE_PATH = 'pythonnot-c71dbb5a4c15.json'
+    FILE_PATH = 'pythonnot-691616cc1321.json'  # ключ сервисного аккаунта google
 
     def __init__(self, calendar_id, my_id):
         self.calendar_id = calendar_id
@@ -155,6 +156,7 @@ class SenderBot:
 
     def telegram_start(self, flag):
         """Выполнение телеграм-бота"""
+
         @self.bot.message_handler(commands=['stop'])
         def stop_bot(message):
             flag.set()
@@ -163,13 +165,14 @@ class SenderBot:
         @self.bot.message_handler(commands=['start'])
         def start_bot(message):
             self.bot.send_message(message.chat.id, 'Bot started')
+
         self.bot.polling(none_stop=True)
 
 
 if __name__ == '__main__':
     notification_message = Queue()
     stop_flag = threading.Event()
-    sbot = SenderBot(my_id=my_id, calendar_id='denis.elers23@gmail.com')
+    sbot = SenderBot(my_id=my_id, calendar_id=calendar_id)
     p1 = threading.Thread(target=sbot.telegram_start, args=(stop_flag,))
     p2 = threading.Thread(target=sbot.start_bot, args=(stop_flag,))
     p1.start()
