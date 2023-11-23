@@ -61,6 +61,7 @@ class SenderBot:
                 if event['etag'][1:-1] not in self.past_birthdays and event['etag'][1:-1] not in self.past_weekly:
                     self.comparison(event)
 
+
     def comparison(self, event):
         """
         Отравляет название события в тг-бота если дата события наступила
