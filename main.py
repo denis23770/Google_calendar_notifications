@@ -55,8 +55,11 @@ class SenderBot:
         """ Провереяет наличие айди уведомлений в словарях-исключениях, если не находит, то запускает comprasion"""
         events = events_d['items']
         for event in events:
-            if event['etag'][1:-1] not in self.past_birthdays and event['etag'][1:-1] not in self.past_weekly:
-                self.comparison(event)
+            if 'summary' not in event:
+                continue
+            else:
+                if event['etag'][1:-1] not in self.past_birthdays and event['etag'][1:-1] not in self.past_weekly:
+                    self.comparison(event)
 
     def comparison(self, event):
         """
@@ -65,6 +68,7 @@ class SenderBot:
         date2 = (
             datetime.now().year, datetime.now().month, datetime.now().day, datetime.now().hour, datetime.now().minute,
             datetime.now().second)
+        print(event)
         text = f"{event['summary']} / date: {event['start']} / {event['etag']}"
         if 'recurrence' in event:  # Дни рождения
             if event['recurrence'] == ['RRULE:FREQ=YEARLY']:
@@ -149,7 +153,7 @@ class SenderBot:
     def start_bot(self, flag):
         """ Запускает цикл выполнения запросов к API google """
         while not flag.is_set():
-            time.sleep(60)  # 240 секунд в релизной версии
+            time.sleep(60)  # 60 секунд в релизной версии
             self.send_event_info(self.get_events())
             self.zeroing_past_birthdays()
             self.zeroing_past_weekly()
